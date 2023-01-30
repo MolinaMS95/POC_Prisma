@@ -6,7 +6,7 @@ export async function rentRoom(req: Request, res: Response) {
   const { phone, password, room, startDate, endDate } = res.locals.rent as Rent;
 
   try {
-    await insertRent(phone, password, room, startDate, endDate);
+    await insertRent(phone, password, room, new Date(startDate), new Date(endDate));
     res.sendStatus(201);
   } catch (error) {
     if (error.type === "error_user_notfound") {

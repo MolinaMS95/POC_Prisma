@@ -25,13 +25,7 @@ export async function getHistory(req: Request, res: Response) {
   const { id } = req.params;
 
   try {
-    const userHistory: {
-      id: number;
-      name: string;
-      phone: string;
-      NumberOfRents: number;
-      rents: { id: number; room: number; startDate: Date; endDate: Date }[];
-    } = await getUserHistory(id);
+    const userHistory = await getUserHistory(id);
     res.status(200).send(userHistory);
   } catch (error) {
     if (error.type === "error_user_notfound") {

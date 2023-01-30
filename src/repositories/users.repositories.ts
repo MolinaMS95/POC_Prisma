@@ -1,7 +1,7 @@
-import { connection } from "../database/db.js";
+import prisma from "../database/db.js";
 
 export function getUserByPhone(phone: string) {
-  return connection.query("SELECT * FROM users WHERE phone=$1;", [phone]);
+  return prisma.users.findFirst({ where: { phone } });
 }
 
 export function insertUserDB(
@@ -9,37 +9,31 @@ export function insertUserDB(
   phone: string,
   hashPassword: string
 ) {
-  return connection.query(
-    "INSERT INTO users (name, phone, password) VALUES ($1, $2, $3);",
-    [name, phone, hashPassword]
-  );
+  return prisma.users.create({
+    data: { name, phone, password: hashPassword },
+  });
 }
 
-export function getUserById(id: string) {
-  return connection.query("SELECT * FROM users WHERE id=$1;", [id]);
+export function getUserById(id: number) {
+  return prisma.users.findFirst({ where: { id } });
 }
 
-export function getRentalsByUser(id: string) {
-  return connection.query(
-    `SELECT users.id, users.name, users.phone, COUNT(rents.id) AS "NumberOfRents",
-            JSON_AGG(JSON_BUILD_OBJECT('id', rents.id,
-                                       'room', rents.room,
-                                       'startDate', rents."startDate",
-                                       'endDate', rents."endDate")) AS rents
-    FROM users LEFT JOIN rents ON users.id = rents.user_id
-    WHERE users.id = $1
-    GROUP BY users.id;`,
-    [id]
-  );
+export function getRentalsByUser(id: number) {
+  return prisma.users.findFirst({
+    where: { id },
+    include: { _count: { select: { rents: true } }, rents: true },
+  });
 }
 
-export function updatePassword(id: string, newPassword: string) {
-  return connection.query("UPDATE users SET password=$1 WHERE id=$2;", [
-    newPassword,
-    id,
-  ]);
+export function updatePassword(id: number, newPassword: string) {
+  return prisma.users.update({
+    where: { id },
+    data: { password: newPassword },
+  });
 }
 
-export function deleteUserDB(id: string) {
-  return connection.query("DELETE FROM users WHERE id=$1;", [id]);
+export function deleteUserDB(id: number) {
+  return prisma.users.delete({
+    where: { id },
+  });
 }
